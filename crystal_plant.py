@@ -1,6 +1,7 @@
 """
 Crystal Plant Machine - Main Script
-Generatore di animazioni         print("🎬 Avvio preview in tempo reale...")
+Generatore di animazioni          print("🎬 Avvio preview in tempo reale...")
+    print("📺 Premere 'q' per uscire, 'r' per riavviare") print("🎬 Avvio preview in tempo reale...")
     print("📺 Premere 'q' per uscire") print("🎬 Avvio preview in tempo reale...")
     print("📺 Premere 'q' per uscire")rint("🎬 Avvio preview in tempo reale...")
     print("📺 Premere 'e' per uscire, 'SPACE' per pausa/play, 'r' per riavviare")ganiche con crescita di rami e deformazioni elastiche.
@@ -145,6 +146,17 @@ def preview_animation(contours, width, height, logo_mask, hierarchy, config):
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q'):
             break
+        elif key == ord('r'):
+            # Riavvia l'animazione resettando tutto
+            print("🔄 Riavvio animazione...")
+            step = 0
+            # Reset del branch manager globale per ricominciare da capo
+            from components.animation import reset_global_branch_manager
+            reset_global_branch_manager()
+            # Ricrea il branch manager
+            branch_manager = BranchManager(config)
+            branch_manager.initialize_branches_from_contours(preview_contours, hierarchy)
+            continue
             
         step += 1
         
