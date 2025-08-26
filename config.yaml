@@ -1,0 +1,39 @@
+# CRYSTAL THERAPY PLANT GENERATOR - CONFIGURAZIONE GLOBALE
+
+# Formato e sorgente
+video_format: "IG_POST"  # IG_STORY (9:16), IG_POST (4:5), INPUT_VIDEO_SIZE
+use_svg_source: "PDF"    # SVG o PDF
+
+# Percorsi file
+paths:
+  svg_path: "input/logo.svg"
+  pdf_path: "input/logo.pdf"
+  texture_path: "input/texture.jpg"
+
+# Parametri video
+video:
+  svg_padding: 40        # Spazio intorno al logo (50-300)
+  fps: 30               # Frame per secondo (10-60)
+  duration_seconds: 30  # Durata in secondi
+
+# Colore e stile logo
+logo:
+  color:
+    r: 255  # Rosso (0-255)
+    g: 255  # Verde (0-255) 
+    b: 255  # Blu (0-255)
+  alpha: 1.0        # Opacità (0.0-1.0)
+  zoom_factor: 1.0  # Zoom (0.5-3.0)
+
+# Sistema texture
+texture:
+  enabled: true
+  target: "both"              # logo, background, both
+  alpha: 0.6                  # Opacità texture logo (0.0-1.0)
+  background_alpha: 0.8       # Opacità texture sfondo (0.1-0.8)
+  blending_mode: "multiply"   # normal, overlay, multiply, screen, etc.
+
+# Smussamento contorni
+smoothing:
+  enabled: true
+  factor: 0.001  # Intensità (0.00001-0.01)
