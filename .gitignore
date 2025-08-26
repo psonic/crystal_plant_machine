@@ -1,9 +1,12 @@
-# Ignora le cache Python
+# Ignore macOS system files
+.DS_Store
+
+# Ignore virtual environment and cache files
 __pycache__/
 components/__pycache__/
-# Ignora cartelle di input e output
-input/
-output/
-.DS_Store
+venv/
+*.pyc
+
+# Ignore input and output directories
 input/
 output/
