@@ -60,10 +60,91 @@ def print_progress_bar(iteration, total, start_time, prefix='✨ Animazione in c
     sys.stdout.flush()
 
 
-def find_sharp_tips(contour, angle_threshold_deg=130, step=15):
+def find_sharp_tips(contour, angle_threshold_deg=150, step=10):
     """
-    Trova i punti di un contorno che sono "punte" (angoli acuti) e calcola la loro direzione.
-    Restituisce una lista di tuple (punto, angolo_di_uscita).
+    Trova i punti finali (endpoints) di un contorno usando la scheletrizzazione.
+    Questo metodo è molto più robusto e preciso del calcolo geometrico degli angoli.
+    """
+    try:
+        from skimage.morphology import skeletonize
+        from skimage import measure
+    except ImportError:
+        print("⚠️ scikit-image non disponibile, uso algoritmo geometrico di fallback")
+        return find_sharp_tips_geometric(contour, angle_threshold_deg, step)
+    
+    # Crea una maschera binaria dal contorno
+    # Prima determiniamo le dimensioni necessarie
+    contour_squeezed = contour.squeeze()
+    if contour_squeezed.ndim == 1:
+        # Se è un singolo punto, non possiamo fare scheletrizzazione
+        return []
+    
+    mins = np.min(contour_squeezed, axis=0).astype(int)
+    maxs = np.max(contour_squeezed, axis=0).astype(int)
+    min_x, min_y = mins[0], mins[1]
+    max_x, max_y = maxs[0], maxs[1]
+    
+    # Aggiungi un po' di padding
+    padding = 50
+    width = max_x - min_x + 2 * padding
+    height = max_y - min_y + 2 * padding
+    
+    # Crea la maschera
+    mask = np.zeros((height, width), dtype=np.uint8)
+    
+    # Trasla il contorno nell'origine della maschera
+    translated_contour = contour_squeezed - [min_x - padding, min_y - padding]
+    translated_contour = translated_contour.astype(np.int32)
+    
+    # Riempi il contorno
+    cv2.fillPoly(mask, [translated_contour], 255)
+    
+    # Converti in binario (True/False) per skimage
+    binary_mask = mask > 0
+    
+    # Applica la scheletrizzazione
+    skeleton = skeletonize(binary_mask)
+    
+    # Trova i punti finali dello scheletro
+    endpoints = []
+    skeleton_uint8 = skeleton.astype(np.uint8) * 255
+    
+    # Scansiona ogni pixel dello scheletro
+    for y in range(1, skeleton.shape[0] - 1):
+        for x in range(1, skeleton.shape[1] - 1):
+            if skeleton[y, x]:  # Se è un pixel dello scheletro
+                # Conta i vicini nell'intorno 3x3
+                neighbors = skeleton[y-1:y+2, x-1:x+2]
+                neighbor_count = np.sum(neighbors) - 1  # -1 per escludere il pixel centrale
+                
+                # Un endpoint ha esattamente 1 vicino
+                if neighbor_count == 1:
+                    # Trasforma le coordinate di nuovo nello spazio originale
+                    original_x = x + min_x - padding
+                    original_y = y + min_y - padding
+                    
+                    # Calcola la direzione di crescita guardando l'unico vicino
+                    for dy in range(-1, 2):
+                        for dx in range(-1, 2):
+                            if dx == 0 and dy == 0:
+                                continue
+                            if skeleton[y + dy, x + dx]:
+                                # Direzione opposta al vicino (per crescere "verso l'esterno")
+                                angle = np.degrees(np.arctan2(-dy, -dx))
+                                endpoints.append(((original_x, original_y), angle))
+                                break
+                        else:
+                            continue
+                        break
+    
+    print(f"🔬 Scheletrizzazione: trovati {len(endpoints)} endpoints reali")
+    return endpoints
+
+
+def find_sharp_tips_geometric(contour, angle_threshold_deg=150, step=10):
+    """
+    Algoritmo geometrico di fallback per trovare punte acute.
+    Usato quando scikit-image non è disponibile.
     """
     tips = []
     contour_squeezed = contour.squeeze()
@@ -72,9 +153,11 @@ def find_sharp_tips(contour, angle_threshold_deg=130, step=15):
     if num_points < 2 * step:
         return []
 
+    # Calcola il centro di massa per determinare "interno" vs "esterno"
+    center = np.mean(contour_squeezed, axis=0)
+    
     for i in range(num_points):
-        # Prendi tre punti: corrente, precedente e successivo, a una certa distanza 'step'
-        # per calcolare l'angolo in modo più stabile e ignorare il rumore.
+        # Prendi tre punti: corrente, precedente e successivo (step ancora più ridotto)
         p_prev = contour_squeezed[(i - step + num_points) % num_points]
         p_curr = contour_squeezed[i]
         p_next = contour_squeezed[(i + step) % num_points]
@@ -93,21 +176,40 @@ def find_sharp_tips(contour, angle_threshold_deg=130, step=15):
         dot_product = np.clip(dot_product, -1.0, 1.0)
         angle = np.degrees(np.arccos(dot_product))
 
-        # Se l'angolo è acuto, abbiamo trovato una punta
-        if angle < angle_threshold_deg:
-            # Calcola la direzione di uscita della punta (la bisettrice dell'angolo, rivolta verso l'esterno)
-            # Sommiamo i vettori normalizzati e invertiamo la direzione per puntare all'esterno.
-            outgoing_vector = -(v1 / norm_v1 + v2 / norm_v2)
-            outgoing_angle = np.degrees(np.arctan2(outgoing_vector[1], outgoing_vector[0]))
+        # Prima verifica: è un angolo acuto? (soglia molto alta)
+        if angle > angle_threshold_deg:
+            continue
             
-            tips.append((tuple(p_curr), outgoing_angle))
+        # Seconda verifica: verifica che il punto sporga verso l'esterno (minimo assoluto)
+        dist_curr = np.linalg.norm(p_curr - center)
+        dist_prev = np.linalg.norm(p_prev - center)
+        dist_next = np.linalg.norm(p_next - center)
+        
+        # Deve sporgere anche solo minimamente (1% di tolleranza)
+        if dist_curr <= max(dist_prev, dist_next) * 1.01:
+            continue
             
-    # Filtra le punte troppo vicine per evitare cluster
+        # Calcola la direzione di uscita della punta
+        outgoing_vector = -(v1 / norm_v1 + v2 / norm_v2)
+        outgoing_angle = np.degrees(np.arctan2(outgoing_vector[1], outgoing_vector[0]))
+        
+        # Terza verifica: direzione ragionevole (estremamente permissiva)
+        to_center = center - p_curr
+        center_angle = np.degrees(np.arctan2(to_center[1], to_center[0]))
+        
+        # L'angolo di uscita deve solo non puntare direttamente verso il centro
+        angle_diff = abs(((outgoing_angle - center_angle + 180) % 360) - 180)
+        if angle_diff < 10:  # Solo 10 gradi minimi di divergenza
+            continue
+        
+        tips.append((tuple(p_curr), outgoing_angle))
+            
+    # Filtra le punte troppo vicine per evitare cluster (distanza molto ridotta)
     if not tips:
         return []
         
     filtered_tips = [tips[0]]
-    min_dist_sq = 50**2 # Distanza minima al quadrato tra le punte
+    min_dist_sq = 20**2  # Distanza minima ulteriormente ridotta
     for i in range(1, len(tips)):
         is_far_enough = True
         for j in range(len(filtered_tips)):
@@ -118,7 +220,7 @@ def find_sharp_tips(contour, angle_threshold_deg=130, step=15):
         if is_far_enough:
             filtered_tips.append(tips[i])
 
-    print(f"✨ Trovate {len(filtered_tips)} punte adatte per la crescita.")
+    print(f"✨ Algoritmo geometrico: trovate {len(filtered_tips)} punte")
     return filtered_tips
 
 

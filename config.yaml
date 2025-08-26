@@ -53,6 +53,8 @@ growth:
   ramification_chance: 0.08
   # Massimo numero di generazioni di rami
   max_generations: 4
+  # Probabilità di crescita dalle punte (1.0 = tutte, 0.5 = metà random, 0.0 = nessuna)
+  tip_growth_probability: 1.0
 
 # Configurazione smoothing dei contorni
 smoothing:

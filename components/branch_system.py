@@ -24,8 +24,14 @@ class Branch:
         self.thickness = max(1, 4 - self.generation) 
         
         # Inerzia di curvatura per curve più armoniose e attorcigliate
-        self.curvature = (random.random() - 0.5) * 15  # Curvatura iniziale aumentata
-        self.curvature_change_rate = random.uniform(0.5, 1.5) # Variazione della curva aumentata
+        if generation == 0:
+            # Rami principali: crescita dritta e deterministica
+            self.curvature = 0  # Nessuna curvatura iniziale
+            self.curvature_change_rate = 0.2  # Variazione minima e fissa
+        else:
+            # Rami secondari: più casuali
+            self.curvature = (random.random() - 0.5) * 15  # Curvatura iniziale aumentata
+            self.curvature_change_rate = random.uniform(0.5, 1.5) # Variazione della curva aumentata
         
         # Metadati per la gerarchia
         self.is_from_hole = False  # True se nasce da un buco (contorno interno)
@@ -39,7 +45,12 @@ class Branch:
         last_point = self.points[-1]
         
         # Aggiorna la curvatura in modo morbido
-        self.curvature += (random.random() - 0.5) * self.curvature_change_rate
+        if self.generation == 0:
+            # Rami principali: crescita più dritta e deterministica
+            self.curvature += (random.random() - 0.5) * self.curvature_change_rate * 0.5  # Variazione ridotta
+        else:
+            # Rami secondari: più casuali
+            self.curvature += (random.random() - 0.5) * self.curvature_change_rate
         # Limita la curvatura per evitare spirali troppo strette
         max_curve = 20 + self.generation * 7 # Curva massima aumentata per più "attorcigliamento"
         self.curvature = max(-max_curve, min(max_curve, self.curvature))
@@ -124,21 +135,30 @@ class BranchManager:
         """Crea rami iniziali dalle punte identificate di un contorno."""
         import random
         
-        # Rende la crescita casuale
-        random.shuffle(tips)
-        num_tips_to_grow = random.randint(len(tips) // 2, len(tips)) if tips else 0
-        selected_tips = tips[:num_tips_to_grow]
+        if not tips:
+            return
+            
+        # Ottieni la probabilità di crescita dal config
+        growth_prob = self.config.get('growth', {}).get('tip_growth_probability', 1.0)
+        
+        # Seleziona le punte che cresceranno in base alla probabilità
+        selected_tips = []
+        for tip in tips:
+            if random.random() < growth_prob:
+                selected_tips.append(tip)
+        
+        print(f"🌱 Punte trovate: {len(tips)}, selezionate per crescita: {len(selected_tips)} (prob: {growth_prob})")
 
         for tip_origin, tip_angle in selected_tips:
             for j in range(self.config['animation']['initial_branches_per_tip']):
-                # L'angolo iniziale ora segue la curva della punta, con una piccola variazione
-                angle = tip_angle + random.uniform(-15, 15)
+                # L'angolo iniziale segue esattamente la direzione della punta (no randomizzazione)
+                angle = tip_angle
                 
-                # Lunghezza normale per forme esterne
-                max_len = random.uniform(self.config['growth']['min_length'], self.config['growth']['max_length'])
+                # Lunghezza fissa per rami principiali (no randomizzazione)
+                max_len = (self.config['growth']['min_length'] + self.config['growth']['max_length']) / 2
                 
-                # Assegna una velocità di crescita casuale
-                speed = random.uniform(self.config['growth']['min_speed'], self.config['growth']['max_speed'])
+                # Velocità fissa per rami principali (no randomizzazione)
+                speed = (self.config['growth']['min_speed'] + self.config['growth']['max_speed']) / 2
                 
                 # Crea il ramo (sempre da forma esterna ora)
                 branch = Branch(origin=tip_origin, initial_angle=angle, max_length=max_len, generation=0, speed_factor=speed)
