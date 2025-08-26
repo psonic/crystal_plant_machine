@@ -1,3 +1,4 @@
+# Questo file è stato svuotato come richiesto.
 #!/usr/bin/env python3
 """
 Version Manager per Crystal Therapy Video Generator

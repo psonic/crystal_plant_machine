@@ -1,33 +1,6 @@
-# 🌊 Natisone Trip Generator
+# Crystal Plant Machine
 
-*Where technology meets mysticism to create mesmerizing visual journeys from the crystal waters of Natisone*
-
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![OpenCV](https://img.shields.io/badge/OpenCV-4.0+-green.svg)](https://opencv.org)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
-[![Magic](https://img.shields.io/badge/Magic-✨-gold.svg)](https://github.com/psonic/CrystalPython2)
-
-## ✨ What is Natisone Trip?
-
-Natisone Trip is an **AI-powered mystical video generator** that transforms static logos and graphics into **hypnotic, flowing visual journeys**. Born from the sacred waters of the Natisone River, this tool channels the **ancient energy of flowing water** through cutting-edge computer vision algorithms.
-
-### 🌊 Features That Flow Like Water
-
-- **🎵 Audio-Reactive Magic**: Your visuals dance to the rhythm of sound, with bass frequencies creating organic deformations
-- **🔍 Lens Deformation Effects**: 30+ mystical lens effects that bend reality around your logo
-- **🌈 Organic Breathing Motion**: Perlin noise-based fluid deformations that make your graphics come alive  
-- **📱 Instagram Stories Ready**: Perfect 9:16 vertical format support for social media magic
-- **🎨 Advanced Blending Modes**: 10+ cinematic blending presets (Glow, Cinematic, Mystical, etc.)
-- **🌟 Dynamic Texture System**: Apply mystical textures (courtesy of TV Int) that react to your content
-- **👻 Ghost Tracers**: Leave ethereal trails that follow your logo's movement through time
-- **🎬 Background Video Integration**: Seamlessly blend with ice video backgrounds and custom footage
-- **⚡ Real-time Processing**: Optimized for smooth rendering with multiprocessing support
-
-## 🚀 Quick Start Ritual
-
-### Prerequisites
-```bash
-# Python 3.8+ required
+Svalvoliamo il vettoriale in modi nuovi.
 python --version
 
 # Install the sacred dependencies
