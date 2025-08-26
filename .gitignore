@@ -4,3 +4,6 @@ components/__pycache__/
 # Ignora cartelle di input e output
 input/
 output/
+.DS_Store
+input/
+output/
