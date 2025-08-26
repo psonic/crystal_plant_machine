@@ -1,0 +1,9 @@
+# Ignora le cache Python
+__pycache__/
+-components/__pycache__/
+# Ignora cartelle di input e output
+input/*
+output/*
+
+# Ignora file di configurazione locali
+-.DS_Store

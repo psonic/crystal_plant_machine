@@ -1,0 +1,83 @@
+# Configurazione Crystal Plant Machine
+# =====================================
+
+# Dimensioni del video di output
+video:
+  width: 1920
+  height: 1080
+  fps: 30
+
+# Configurazione input
+input:
+  # Tipo di input: 'PDF' o 'SVG'
+  type: 'PDF'
+  # Percorso del file di input
+  path: 'input/logo.pdf'
+  # Padding attorno al logo (in pixel)
+  padding: 100
+
+# Configurazione logo
+logo:
+  # Colore del logo (R, G, B)
+  color: [255, 255, 255]
+  # Fattore di zoom del logo (1.0 = normale, 2.0 = doppio, 0.5 = metà)
+  zoom_factor: 1.0
+
+# Configurazione animazione
+animation:
+  # Numero di frame dell'animazione (più alto = più lento e fluido)
+  steps: 450
+  # Numero iniziale di rami per ogni punta identificata
+  initial_branches_per_tip: 1
+
+# Configurazione deformazioni elastiche
+deformation:
+  # Abilita/disabilita le deformazioni elastiche
+  enabled: true
+  # Intensità delle deformazioni (0.0 = nessuna, 1.0 = normale, 2.0 = estrema)
+  intensity: 1.0
+  # Velocità delle onde di deformazione (moltiplicatore della frequenza)
+  wave_speed: 1.0
+  # Numero di onde sovrapposte (più onde = effetto più complesso)
+  wave_layers: 3
+
+# Configurazione crescita organica
+growth:
+  # Lunghezza minima e massima dei rami
+  min_length: 80
+  max_length: 220
+  # Fattore di velocità minimo e massimo
+  min_speed: 0.7
+  max_speed: 1.2
+  # Probabilità di ramificazione base
+  ramification_chance: 0.08
+  # Massimo numero di generazioni di rami
+  max_generations: 4
+
+# Configurazione smoothing dei contorni
+smoothing:
+  # Abilita/disabilita lo smoothing
+  enabled: true
+  # Fattore di smoothing (0.001-0.1, più basso = più liscio)
+  factor: 0.01
+
+# Configurazione texture
+texture:
+  # Percorso della texture di sfondo (opzionale)
+  path: 'input/texture.png'
+
+# Configurazione output
+output:
+  # Cartella di output
+  directory: 'output'
+  # Simboli magici per il nome del file
+  magic_symbols: ['🔮', '✨', '🌟', '🌿', '🌊']
+  # Prefisso del nome del file
+  filename_prefix: 'crystal_plant'
+
+# Configurazione debug
+debug:
+  # Stampa informazioni dettagliate
+  verbose: true
+  # Salva frame intermedi per debug
+  save_debug_frames: false
